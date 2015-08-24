@@ -22,6 +22,7 @@ SECRET_KEY = 'u2)@ws*r!jju21(2#eo*)mdm2nv(l)atd5-hnukd*s523fcl6%'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'stuff/templates'),)
 TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
