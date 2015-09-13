@@ -5,6 +5,8 @@ from stuff import main
 urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
 
-    url(r'^$', main.start),
+    url(r'^api/v1/users/create$', main.create_user),
+    url(r'^api/v1/users/(\d+)$', main.lookup_user),
+    url(r'^api/v1/users/(\d+)/update$', main.update_user),
 )
 
