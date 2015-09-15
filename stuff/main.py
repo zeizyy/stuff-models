@@ -78,6 +78,71 @@ def update_user(request, user_id):
 
     return _success_response(request)
 
+def leave_thing(request):
+    if request.method != 'POST':
+        return _error_response(request, "must make POST request")
+    if 'title' not in request.POST or      \
+       'giver_id' not in request.POST or   \
+       'location' not in request.POST:
+        return _error_response(request, "missing required fields")
+
+    try:
+        giver = models.User.objects.get(pk=request.POST['giver_id'])
+    except models.User.DoesNotExist:
+        return _error_response(request, "giver not found")
+    
+    t = models.Thing(title=request.POST['title'],                       \
+                     description = request.POST.get('description', ''), \
+                     giver=giver,                                       \
+                     location=request.POST['location'],                 \
+                     date_given=datetime.datetime.now(),                \
+                     was_taken=False                                    \
+                     )
+    try:
+        t.save()
+    except db.Error:
+        return _error_response(request, "db error")
+
+    return _success_response(request, {'thing_id': t.pk})
+                     
+def lookup_thing(request, thing_id):
+    if request.method != 'GET':
+        return _error_response(request, "must make GET request")
+    
+    try:
+        t = models.Thing.objects.get(pk=thing_id)
+    except models.Thing.DoesNotExist:
+        return _error_response(request, "thing not found")
+
+    return _success_response(request, {'title': t.title,             \
+                                       'description': t.description, \
+                                       'giver_id': t.giver_id,       \
+                                       'location': t.location,       \
+                                       'date_given': t.date_given,   \
+                                       'was_taken': t.was_taken,     \
+                                       })
+
+def take_thing(request, thing_id):
+    if request.method != 'POST':
+        return _error_response(request, "must make POST request")
+
+    try:
+        t = models.Thing.objects.get(pk=thing_id)
+    except models.Thing.DoesNotExist:
+        return _error_response(request, "thing not found")
+
+    if t.was_taken:
+        return _error_response(request, "thing already taken")
+
+    t.was_taken = True
+
+    try:
+        t.save()
+    except db.Error:
+        return _error_response(request, "db error")
+
+    return _success_response(request)
+
 def _error_response(request, error_msg):
     return JsonResponse({'ok': False, 'error': error_msg})
 

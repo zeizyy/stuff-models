@@ -10,8 +10,9 @@ class User(models.Model):
 
 class Thing(models.Model):
     title = models.CharField(max_length=64)
-    description = models.TextField()
+    description = models.TextField(blank=True)
     giver = models.ForeignKey('User')
+    location = models.CharField(max_length=20)
     date_given = models.DateTimeField()
     was_taken = models.BooleanField()
 
