@@ -2,6 +2,7 @@ import datetime
 
 from django.http import JsonResponse
 from django.contrib.auth import hashers
+from django.forms.models import model_to_dict
 from django import db
 
 from stuff import models
@@ -78,6 +79,21 @@ def update_user(request, user_id):
 
     return _success_response(request)
 
+def recent_givers(request):
+    if request.method != 'GET':
+        return _error_response(request, "must make GET request")
+
+    givers = []
+    try:
+        ts = _recent_things()
+        for t in ts:
+            u = models.User.objects.get(pk=t['giver'])
+            givers.append(model_to_dict(u))
+    except db.Error:
+        return _error_response(request, "db error")
+    return _success_response(request, {'recent_givers': givers})
+
+
 def leave_thing(request):
     if request.method != 'POST':
         return _error_response(request, "must make POST request")
@@ -142,6 +158,22 @@ def take_thing(request, thing_id):
         return _error_response(request, "db error")
 
     return _success_response(request)
+
+def recent_things(request):
+    if request.method != 'GET':
+        return _error_response(request, "must make GET request")
+
+    try:
+        ts = _recent_things()
+    except db.Error:
+        return _error_response(request, "db error")
+
+    return _success_response(request, {'recent_things': ts})
+
+def _recent_things():
+    ts = models.Thing.objects.order_by('date_given')[:3]
+    ts = list(map(model_to_dict, ts))
+    return ts
 
 def _error_response(request, error_msg):
     return JsonResponse({'ok': False, 'error': error_msg})
